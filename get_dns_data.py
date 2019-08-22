@@ -29,4 +29,5 @@ try:
         print('Registro DNS no valido o no soportado!s')
 except dns.exception.DNSException as e:
     print('Error - ' + str(e))
-
+finally:
+    print('\nGitHub.com/LisandroLuna')
