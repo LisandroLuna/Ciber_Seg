@@ -1,3 +1,5 @@
+#Obtener informacion de los registros DNS de un dominio
+
 import dns
 import dns.resolver
 import dns.exception
