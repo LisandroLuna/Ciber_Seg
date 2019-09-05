@@ -1,5 +1,6 @@
 import netifaces
 import subprocess as sp
+import nmap
 
 
 def getBitsNetmask(netmask):
@@ -47,8 +48,11 @@ def scanIp(start, nhosts):
     #Limito la cantidad de host a escanear a 10 para evitar demoras
     #for i in range(0, nhosts-1):
     for i in range(0, 11):
+        print('\nIP a analizar: ' + datastr)
         if getPing(datastr) == True:
-            print('\nIP a analizar: ' + datastr)
+            analizeIp(datastr)
+        else:
+            print('    - Sin respuesta.')
         if startip[3] <= 255:
             startip[3] = startip[3] + 1
         else:
@@ -63,6 +67,15 @@ def scanIp(start, nhosts):
                     else:
                         print('IP Erroenea!')
         datastr = str(startip[0]) + '.' + str(startip[1]) + '.' + str(startip[2]) + '.' + str(startip[3])
+
+
+def analizeIp(host):
+    nm = nmap.PortScanner()
+    try:
+        r = nm.scan(host, arguments='-sV - O - p 21, 22, 80, 110, 135, 139, 455, 8080')
+        print(nm[host]['tcp'])
+    except:
+        print('    - Error al leer IP')
 
 
 def getListIf(ifli):
@@ -102,5 +115,6 @@ print('    - Tipo de red: ' + str(shost) + '/' + str(nbits))
 print('\nComenzando analisis de red, solo se analizaran los host que respondan ping.')
 print('-Escaneo limitado a 10 hosts-')
 print('Iniciando...')
+#scanIp('10.40.7.20', hosts)
 scanIp(shost, hosts)
 
