@@ -1,7 +1,7 @@
 import netifaces
 import subprocess as sp
 import nmap
-
+import socket
 
 def getBitsNetmask(netmask):
     return sum([bin(int(x)).count('1') for x in netmask.split('.')])
@@ -70,12 +70,38 @@ def scanIp(start, nhosts):
 
 
 def analizeIp(host):
-    nm = nmap.PortScanner()
     try:
-        r = nm.scan(host, arguments='-sV - O - p 21, 22, 80, 110, 135, 139, 455, 8080')
-        print(nm[host]['tcp'])
-    except:
-        print('    - Error al leer IP')
+        nm = nmap.PortScanner()
+        try:
+            r = nm.scan(host, arguments='-sT -w 5')
+            print('    - Puertos TCP:')
+            getportsinfo(nm[host]['tcp'], host)
+        except Exception as e:
+            print('        - Error al leer puertos TCP.')
+        try:
+            r = nm.scan(host, arguments='-sU -w 5')
+            print('    - Puertos UDP:')
+            getportsinfo(nm[host]['udp'], host)
+        except Exception as e:
+            print('        -  Error al leer puertos UDP.')
+    except Exception as e:
+            print('    - Error al Escanear.')
+
+
+def getbannerdata(ip, port):
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect((ip, port))
+        banner = sock.recv(1024)
+        return banner
+    except Exception as e:
+        return 'N/A'
+
+
+def getportsinfo(data, host):
+    for k in data:
+        banner = getbannerdata(host, data)
+        print('        - ' + str(k) + ': ' + banner)
 
 
 def getListIf(ifli):
@@ -84,15 +110,25 @@ def getListIf(ifli):
 
 
 def getIfData(iface):
-    data = netifaces.ifaddresses(iface)
-    ipv4data = data[netifaces.AF_INET]
-    return ipv4data
+        data = netifaces.ifaddresses(iface)
+        ipv4data = data[netifaces.AF_INET]
+        return ipv4data
 
 
 def getPing(ip):
-    status, result = sp.getstatusoutput("ping -c1 -w2 " + ip)
+    try:
+        status, result = sp.getstatusoutput("ping -c1 -w2 " + ip)
 
-    if status == 0:
+        if status == 0:
+            return True
+        else:
+            return False
+    except Exception as e:
+        return False
+
+
+def checkKey(dict, key):
+    if key in dict.keys():
         return True
     else:
         return False
