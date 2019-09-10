@@ -6,7 +6,7 @@ import argparse
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-i", "--iface", help="Ingresar interfaz a utilizar", action="store_true")
+parser.add_argument("-i", "--iface", type=str, help="Ingresar interfaz a utilizar")
 args = parser.parse_args()
 
 
@@ -147,19 +147,20 @@ def checkkey(dict, key):
 
 
 print('Bienvenido PyScan')
-iface =  args.iface
+iface = args.iface
 print('')
 if iface == 'lo':
-    print('El script no escanea redes lcoales!')
+    print('El script no escanea redes locales!')
 elif iface == 'localhost':
-    print('El script no escanea redes lcoales!')
+    print('El script no escanea redes locales!')
 else:
-    ifaces = getlistif(netifaces.interfaces())
+    ifaces = netifaces.interfaces()
     if iface in ifaces:
         ifdata = getifdata(iface)
         nbits = getbitsnetmask(ifdata[0]['netmask'])
         hosts = gethostnum(nbits)
         shost = getstarterip(ifdata[0]['broadcast'], hosts)
+        print('Interfaz: ' + iface)
         print('    - IP: ' + ifdata[0]['addr'])
         print('    - Netmask: ' + ifdata[0]['netmask'])
         print('    - Broadcast: ' + ifdata[0]['broadcast'])
