@@ -3,6 +3,7 @@ import subprocess as sp
 import nmap
 import socket
 import argparse
+import requests
 
 
 parser = argparse.ArgumentParser()
@@ -52,12 +53,14 @@ def getstarterip(broad, nhosts):
 def scanip(start, nhosts):
     startip = splitip(start)
     datastr = str(startip[0]) + '.' + str(startip[1]) + '.' + str(startip[2]) + '.' + str(startip[3])
+    data = {}
+    data['hosts'] = []
     # Limito la cantidad de host a escanear a 10 para evitar demoras
     # for i in range(0, nhosts-1):
-    for i in range(0, 11):
+    for i in range(0, 3):
         print('\nIP a analizar: ' + datastr)
         if getping(datastr) == True:
-            analizeip(datastr)
+            analizeip(datastr, data)
         else:
             print('    - Sin respuesta a ping.')
         if startip[3] <= 255:
@@ -74,21 +77,22 @@ def scanip(start, nhosts):
                     else:
                         print('IP Erroenea!')
         datastr = str(startip[0]) + '.' + str(startip[1]) + '.' + str(startip[2]) + '.' + str(startip[3])
+    sendjson(data)
 
 
-def analizeip(host):
+def analizeip(host, d):
     try:
         nm = nmap.PortScanner()
         try:
             r = nm.scan(host, arguments='-sT -T5')
             print('    - Puertos TCP:')
-            getportsinfo(nm[host]['tcp'], host)
+            getportsinfo(nm[host]['tcp'], host, d)
         except Exception as e:
             print('        - Error al leer puertos TCP.')
         try:
             r = nm.scan(host, arguments='-sU -T5')
             print('    - Puertos UDP:')
-            getportsinfo(nm[host]['udp'], host)
+            getportsinfo(nm[host]['udp'], host, d)
         except Exception as e:
             print('        -  Error al leer puertos UDP.')
     except Exception as e:
@@ -107,14 +111,15 @@ def getbannerdata(ip, port):
         return str(e)
 
 
-def getportsinfo(data, host):
+def getportsinfo(data, host, d):
     for k in data:
+        banner = 'N/A'
         try:
             banner = getbannerdata(host, int(k))
             print('        - ' + str(k) + ': ' + banner)
         except Exception as e:
-            return 'N/A' + str(e)
-
+            return banner + str(e)
+        createjson(d, host, k, banner)
 
 def getlistif(ifli):
     for i in (0, (len(ifli) - 1)):
@@ -146,6 +151,25 @@ def checkkey(dict, key):
         return False
 
 
+def createjson(dat, ip, port, service):
+    dat['hosts'].append({
+        'ip': ip,
+        'port': port,
+        'service': service,
+    })
+
+
+def sendjson(datos):
+    url = "http://127.0.0.1/example/fake_url.php"
+    dat = open('output.json', 'w')
+    dat.write(str(datos))
+    dat.close()
+    try:
+        r = requests.post(url=url, params=datos)
+    except Exception as e:
+        print('Error de conexion a API!')
+
+
 print('Bienvenido PyScan')
 iface = args.iface
 print('')
@@ -169,7 +193,6 @@ else:
         print('\nComenzando analisis de red, solo se analizaran los host que respondan ping.')
         print('-Escaneo limitado a 10 hosts-')
         print('Iniciando...')
-        # scanIp('10.40.7.20', hosts)
         scanip(shost, hosts)
     else:
         print('Interfaz no valida!')
