@@ -84,13 +84,13 @@ def analizeip(host, d):
     try:
         nm = nmap.PortScanner()
         try:
-            r = nm.scan(host, arguments='-sT -T5')
+            r = nm.scan(host, arguments='-sT -O -T5')
             print('    - Puertos TCP:')
             getportsinfo(nm[host]['tcp'], host, d)
         except Exception as e:
             print('        - Error al leer puertos TCP.')
         try:
-            r = nm.scan(host, arguments='-sU -T5')
+            r = nm.scan(host, arguments='-sU -O -T5')
             print('    - Puertos UDP:')
             getportsinfo(nm[host]['udp'], host, d)
         except Exception as e:
@@ -104,7 +104,7 @@ def getbannerdata(ip, port):
         s = socket.socket()
         s.connect((ip, port))
         banner = s.recv(1024)
-        banner = str(banner).replace('b\'', '').replace('\'', '').rstrip('\r\n')
+        # banner = str(banner).replace('b\'', '').replace('\'', '').rstrip('\r\n')
         banner = (banner[:75] + '..') if len(banner) > 75 else banner
         return banner
     except Exception as e:
