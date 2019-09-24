@@ -104,7 +104,7 @@ def getbannerdata(ip, port):
         s = socket.socket()
         s.connect((ip, port))
         banner = s.recv(1024)
-        # banner = str(banner).replace('b\'', '').replace('\'', '').rstrip('\r\n')
+        banner = str(banner).replace('b\'', '').replace('\'', '').rstrip('\r\n')
         banner = (banner[:75] + '..') if len(banner) > 75 else banner
         return banner
     except Exception as e:
