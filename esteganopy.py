@@ -1,41 +1,48 @@
-from steg import steg_img
+import platform
 import argparse
+import os
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-f", "--file", type=str, help="Ingresar archivo a esconder")
-parser.add_argument("-i", "--image", type=str, help="Ingresar imagen de destino")
+parser.add_argument("-f", "--file", type=str, help="Ingresar ruta del archivo a esconder")
+parser.add_argument("-i", "--image", type=str, help="Ingresar ruta del archivo receptor")
 args = parser.parse_args()
 
-def hidefile(file, img):
-    hfile = steg_img.IMG(payload_path=file, image_path=img)
+def hidefile(file, file2):
+    osl = platform.system()
     try:
-        hfile.hide()
-        print('Se escondio el archivo\'' + file + '\' en la imagen \'' + img + '\'.\n\n')
+        if osl == 'Windows':
+            os.system('copy /b ' + file + '+' + file2 + ' ' + file2)
+        elif osl == 'Linux':
+            os.system('cat ' + file + ' >> ' + file2)
+        print('Se escondio el archivo\'' + file + '\' en el archivo \'' + file2 + '\'.\n\n')
     except Exception as e:
-        print(e)
+        print(e + '\n')
 
 
-def showfile(img):
-    sfile = steg_img.IMG(image_path=img)
+def showfile(file2):
+    osl = platform.system()
     try:
-        sfile.extract()
-        print('Se extrajo el archivo oculto en la imagen \'' + img + '\'.\n\n')
+        if osl == 'Windows':
+            os.system('WinRAR e -y ' + file2)
+        elif osl == 'Linux':
+            os.system('unrar x ' + file2)
+        print('Se extrajo el archivo oculto en \'' + file2 + '\'.\n\n')
     except Exception as e:
-        print(e)
+        print(e + '\n')
 
 def main():
     file = args.file
-    img = args.image
+    file2 = args.image
     print('EstegoPy es un script que permite ocultar un archivo X en una imagen.\n')
     action = 0
-    if file and img:
+    if file and file2:
         action = 1
-    elif img and not file:
+    elif file2 and not file:
         action = 2
     if action == 1:
-        hidefile(file, img)
+        hidefile(file, file2)
     elif action == 2:
-        showfile(img)
+        showfile(file2)
     elif action == 0:
         print('Debe ingresar al menos la variable de imagen!')
         exit()
