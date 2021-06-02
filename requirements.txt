@@ -6,4 +6,4 @@ nmap==0.0.1
 pygeoip==0.3.2
 pythonwhois==2.4.3
 requests==2.24.0
-urllib3==1.25.10
+urllib3==1.26.5
